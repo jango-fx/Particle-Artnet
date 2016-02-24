@@ -1,25 +1,29 @@
-// This #include statement was automatically added by the Particle IDE.
+/*
+This is similar to ArtnetReceive but uses a callback to read the data.
+This example may be copied under the terms of the MIT license, see the LICENSE file for details
+*/
+
 #include "Artnet/Artnet.h"
 
 Artnet artnet;
 
 void setup() {
     Serial.begin(9600);
-    
+
+	// Start listening for Art-Net packages
+	// Call onDmxFrame when receiving one
     artnet.begin();
     artnet.setArtDmxCallback(onDmxFrame);
-    
-    pinMode(D7, OUTPUT);
-    digitalWrite(D7, HIGH);
 }
 
 void loop() {
+	// Process pending Art-Net packages
     artnet.read();
 }
 
 void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data)
 {
-  // print out our data
+  // Print out the data received
   Serial.print("universe number = ");
   Serial.print(universe);
   Serial.print("\tdata length = ");
@@ -34,6 +38,4 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   }
   Serial.println();
   Serial.println();
-
-    digitalWrite(D7, data[0] != 0);
 }
