@@ -1,32 +1,20 @@
-/*
-This is similar to ArtnetReceive but uses a callback to read the data.
-This example may be copied under the terms of the MIT license, see the LICENSE file for details
-*/
-
-#include <Artnet.h>
-#include <Ethernet.h>
-#include <EthernetUdp.h>
-#include <SPI.h>
+// This #include statement was automatically added by the Particle IDE.
+#include "Artnet/Artnet.h"
 
 Artnet artnet;
 
-// Change ip and mac address for your setup
-byte ip[] = {192, 168, 2, 2};
-byte mac[] = {0x04, 0xE9, 0xE5, 0x00, 0x69, 0xEC};
-
-void setup()
-{
-  Serial.begin(115200);
-  artnet.begin(mac, ip);
-  
-  // this will be called for each packet received
-  artnet.setArtDmxCallback(onDmxFrame);
+void setup() {
+    Serial.begin(9600);
+    
+    artnet.begin();
+    artnet.setArtDmxCallback(onDmxFrame);
+    
+    pinMode(D7, OUTPUT);
+    digitalWrite(D7, HIGH);
 }
 
-void loop()
-{
-  // we call the read function inside the loop
-  artnet.read();
+void loop() {
+    artnet.read();
 }
 
 void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data)
@@ -38,7 +26,7 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   Serial.print(length);
   Serial.print("\tsequence n0. = ");
   Serial.println(sequence);
-  Serial.print("DMX data: ");
+  Serial.print("\tDMX data: ");
   for (int i = 0 ; i < length ; i++)
   {
     Serial.print(data[i]);
@@ -47,4 +35,5 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   Serial.println();
   Serial.println();
 
+    digitalWrite(D7, data[0] != 0);
 }
