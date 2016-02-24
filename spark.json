@@ -1,0 +1,7 @@
+{
+    "name": "Artnet",
+    "version": "0.0.1",
+    "author": "Stef Sijben <github@stefsybo.nl>",
+    "license": "MIT",
+    "description": "Artnet DMX over Ethernet receiver library"
+}
