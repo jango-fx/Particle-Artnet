@@ -38,4 +38,14 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   }
   Serial.println();
   Serial.println();
+  
+  // Control the RGB LED with the first 3 channels of universe 11
+  if (universe == 11 && length >= 3) {
+      RGB.control(true);
+      
+      RGB.color(data[0], data[1], data[2]);
+      RGB.brightness(255);
+  } else {
+      RGB.control(false);
+  }
 }
