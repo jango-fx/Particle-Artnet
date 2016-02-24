@@ -26,9 +26,8 @@ THE SOFTWARE.
 
 Artnet::Artnet() {}
 
-void Artnet::begin(byte mac[], byte ip[])
+void Artnet::begin()
 {
-  Ethernet.begin(mac,ip);
   Udp.begin(ART_NET_PORT);
 }
 
@@ -63,10 +62,7 @@ uint16_t Artnet::read()
         return ART_POLL; 
       }
   }
-  else
-  {
     return 0;
-  }
 }
 
 void Artnet::printPacketHeader()
@@ -91,3 +87,4 @@ void Artnet::printPacketContent()
   }
   Serial.println('\n');
 }
+
