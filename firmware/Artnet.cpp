@@ -36,35 +36,63 @@ void Artnet::begin()
 uint16_t Artnet::read()
 {
   packetSize = Udp.parsePacket();
-  
+
   if (packetSize <= MAX_BUFFER_ARTNET && packetSize > 0)
-  { 
-      Udp.read(artnetPacket, MAX_BUFFER_ARTNET);
+  {
+    Udp.read(artnetPacket, MAX_BUFFER_ARTNET);
 
-      // Check that packetID is "Art-Net" else ignore
-      for (byte i = 0 ; i < 9 ; i++)
-      {
-        if (artnetPacket[i] != ART_NET_ID[i])
-          return 0;
-      }
-        
-      opcode = artnetPacket[8] | artnetPacket[9] << 8; 
+    // Check that packetID is "Art-Net" else ignore
+    for (byte i = 0; i < 9; i++)
+    {
+      if (artnetPacket[i] != ART_NET_ID[i])
+        return 0;
+    }
 
-      if (opcode == ART_DMX)
-      {
-        sequence = artnetPacket[12];
-        incomingUniverse = artnetPacket[14] | artnetPacket[15] << 8;  
-        dmxDataLength = artnetPacket[17] | artnetPacket[16] << 8;
+    opcode = artnetPacket[8] | artnetPacket[9] << 8;
 
-        if (artDmxCallback) (*artDmxCallback)(incomingUniverse, dmxDataLength, sequence, artnetPacket + ART_DMX_START);
-        return ART_DMX;
-      }
-      if (opcode == ART_POLL)
-      {
-        return ART_POLL; 
-      }
+    if (opcode == ART_DMX)
+    {
+      sequence = artnetPacket[12];
+      incomingUniverse = artnetPacket[14] | artnetPacket[15] << 8;
+      dmxDataLength = artnetPacket[17] | artnetPacket[16] << 8;
+
+      if (artDmxCallback)
+        (*artDmxCallback)(incomingUniverse, dmxDataLength, sequence, artnetPacket + ART_DMX_START);
+      return ART_DMX;
+    }
+    if (opcode == ART_POLL)
+    {
+      return ART_POLL;
+    }
   }
-    return 0;
+  return 0;
+}
+
+void Artnet::sendBroadcast(char dmxData[], int dmxDataLength)
+{
+  uint8_t packet[MAX_BUFFER_ARTNET];
+  packet[0] = ART_NET_ID;
+  packet[8] = ART_DMX/256;
+  packet[9] = ART_DMX;
+  packet[10] = PROTOCOL_VERSION/256;
+  packet[11] = PROTOCOL_VERSION;
+  packet[16] = dmxDataLength/256;
+  packet[17] = dmxDataLength;
+  packet[18] = dmxData;
+  /* 
+  00-07   Header:           ART_NET_ID
+  08-09   OpCode:           ART_DMX
+  10-11   Protocol Version: PROTOCOL_VERSION
+  16-17   Data Length:      dmxDataLength
+  18-..   Data:             dmxData
+  
+  opcode = artnetPacket[8] | artnetPacket[9] << 8;
+  sequence = artnetPacket[12];
+  incomingUniverse = artnetPacket[14] | artnetPacket[15] << 8;
+  dmxDataLength = artnetPacket[17] | artnetPacket[16] << 8;
+  */
+
+  Udp.sendPacket(buffer, MAX_BUFFER_ARTNET, IPAddress(BROATCAST_ADDRESS), ART_NET_PORT);
 }
 
 void Artnet::printPacketHeader()
@@ -83,10 +111,10 @@ void Artnet::printPacketHeader()
 
 void Artnet::printPacketContent()
 {
-  for (uint16_t i = ART_DMX_START ; i < dmxDataLength ; i++){
+  for (uint16_t i = ART_DMX_START; i < dmxDataLength; i++)
+  {
     Serial.print(artnetPacket[i], DEC);
     Serial.print("  ");
   }
   Serial.println('\n');
 }
-
